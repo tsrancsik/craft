@@ -1,0 +1,67 @@
+version: 1
+
+sources:
+  - name: craft
+    database: craftdb
+    schema: craft
+    tables:
+      - name: sessions
+        description: Aggregated user activity
+        columns:
+          - name: user_id
+            description: Identifier of the user
+            tests:
+              - not_null
+          - name: signup_date
+            description: Date of signup
+            test:
+              - not null
+          - name: date
+            description: Date of activities
+            test:
+              - not null
+          - name: document_created
+            description: Times of creating a new document in the session
+          - name: document_edits
+            description: Times of editing a document in the session
+          - name: document_shares
+            description: Times of sharing a document in the session
+          - name: document_opens
+            description: Times of opening a document in the session
+          - name: comments_created
+            description: The number of comments created in the session
+          - name: reactions_created
+            description: The number of reactions created in the session
+
+models:
+  - name: stg_sessions
+    description: Sessions data amended with relative date
+    columns:
+      - name: user_id
+        description: Identifier of the user
+        tests:
+          - not_null
+      - name: signup_date
+        description: Date of signup
+        test:
+          - not_null
+      - name: date
+        description: Date of activities
+        test:
+          - not_null
+      - name: days_from_signup
+        description: Days from signup at the time of the session
+        test:
+          - not_null
+      - name: document_created
+        description: Times of creating a new document in the session
+      - name: document_edits
+        description: Times of editing a document in the session
+      - name: document_shares
+        description: Times of sharing a document in the session
+      - name: document_opens
+        description: Times of opening a document in the session
+      - name: comments_created
+        description: The number of comments created in the session
+      - name: reactions_created
+        description: The number of reactions created in the session

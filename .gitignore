@@ -1,0 +1,7 @@
+/target
+/dbt_packages
+/dbt-env
+/logs
+profiles.yml
+config.ini
+.user.yml
