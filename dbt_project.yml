@@ -16,5 +16,5 @@ models:
   craft_project:
     staging:
       materialized: table
-    users:
+    by_age:
       materialized: table
