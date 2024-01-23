@@ -1,6 +1,6 @@
 with day_series as (
     select
-        generate_series (1, 20, 1) as day
+        generate_series (1, 100, 1) as day
 ),
 
 users as (
@@ -8,12 +8,12 @@ users as (
         user_id
     from
         {{ ref('activities_by_age') }}
-    where
-        user_id in (
-            '00067a81-ef46-09ea-c509-bebcb4e23415',
-            '00039149-7429-9321-80d2-69a5527bb791',
-            '0006a3e2-e2a4-27f1-1afe-52a68df3bd54'
-        )
+    -- where
+    --     user_id in (
+    --         '00067a81-ef46-09ea-c509-bebcb4e23415',
+    --         '00039149-7429-9321-80d2-69a5527bb791',
+    --         '0006a3e2-e2a4-27f1-1afe-52a68df3bd54'
+    --     )
 ),
 
 daily_users as (
@@ -69,6 +69,58 @@ document_edits_partitions as (
         ) as document_edits_partition
     from
         activities
+),
+
+document_shares_partitions as (
+    select
+        day,
+        user_id,
+        document_shares_cumsum,
+        count(document_shares_cumsum) over (
+            partition by user_id
+            order by day
+        ) as document_shares_partition
+    from
+        activities
+),
+
+document_opens_partitions as (
+    select
+        day,
+        user_id,
+        document_opens_cumsum,
+        count(document_opens_cumsum) over (
+            partition by user_id
+            order by day
+        ) as document_opens_partition
+    from
+        activities
+),
+
+comments_created_partitions as (
+    select
+        day,
+        user_id,
+        comments_created_cumsum,
+        count(comments_created_cumsum) over (
+            partition by user_id
+            order by day
+        ) as comments_created_partition
+    from
+        activities
+),
+
+reactions_created_partitions as (
+    select
+        day,
+        user_id,
+        reactions_created_cumsum,
+        count(reactions_created_cumsum) over (
+            partition by user_id
+            order by day
+        ) as reactions_created_partition
+    from
+        activities
 )
 
 select
@@ -87,97 +139,40 @@ select
             partition by dep.user_id, document_edits_partition
             order by dep.day
         ), 0
-    ) as document_edits
+    ) as document_edits,
+    document_shares_cumsum,
+    coalesce(
+        first_value(document_shares_cumsum) over (
+            partition by dsp.user_id, document_shares_partition
+            order by dsp.day
+        ), 0
+    ) as document_shares,
+    document_opens_cumsum,
+    coalesce(
+        first_value(document_opens_cumsum) over (
+            partition by dsp.user_id, document_opens_partition
+            order by dop.day
+        ), 0
+    ) as document_opens,
+    comments_created_cumsum,
+    coalesce(
+        first_value(comments_created_cumsum) over (
+            partition by ccp.user_id, comments_created_partition
+            order by ccp.day
+        ), 0
+    ) as comments_created,
+    reactions_created_cumsum,
+    coalesce(
+        first_value(reactions_created_cumsum) over (
+            partition by rcp.user_id, reactions_created_partition
+            order by rcp.day
+        ), 0
+    ) as reactions_created
+
 from
     document_created_partitions as dcp
     inner join document_edits_partitions as dep on dcp.user_id = dep.user_id and dcp.day = dep.day
-
--- first_non_null as (
---     select
---         days_from_signup,
---         user_id,
---         documents_created_cumsum,
---         case
---             when
---                 documents_created_cumsum is not null then documents_created_cumsum
---             else
---                 first_value(documents_created_cumsum) over (
---                     partition by user_id
---                     order by days_from_signup rows between unbounded preceding and current row
---                 )
---         end as documents_created,
---         document_edits_cumsum,
---         case
---             when
---                 document_edits_cumsum is not null then document_edits_cumsum
---             else
---                 first_value(document_edits_cumsum) over (
---                     partition by user_id
---                     order by days_from_signup rows between unbounded preceding and current row
---                 )
---         end as document_edits,
---         document_shares_cumsum,
---         case
---             when
---                 document_shares_cumsum is not null then document_shares_cumsum
---             else
---                 first_value(document_shares_cumsum) over (
---                     partition by user_id
---                     order by days_from_signup rows between unbounded preceding and current row
---                 )
---         end as document_shares,
---         document_opens_cumsum,
---         case
---             when
---                 document_opens_cumsum is not null then document_opens_cumsum
---             else
---                 first_value(document_opens_cumsum) over (
---                     partition by user_id
---                     order by days_from_signup rows between unbounded preceding and current row
---                 )
---         end as document_opens,
---         comments_created_cumsum,
---         case
---             when
---                 comments_created_cumsum is not null then comments_created_cumsum
---             else
---                 first_value(comments_created_cumsum) over (
---                     partition by user_id
---                     order by days_from_signup rows between unbounded preceding and current row
---                 )
---         end as comments_created,
---         reactions_created_cumsum,
---         case
---             when
---                 reactions_created_cumsum is not null then reactions_created_cumsum
---             else
---                 first_value(reactions_created_cumsum) over (
---                     partition by user_id
---                     order by days_from_signup rows between unbounded preceding and current row
---                 )
---         end as reactions_created
---     from
---         activities
---     order by
---         user_id,
---         days_from_signup
--- )
-
--- select
---     *
--- from
---     first_non_null
--- order by
---     user_id,
---     days_from_signup
-
--- select
---     days_from_signup,
---     user_id,
---     documents_created_cumsum,
---     coalesce(documents_created, 0) as documents_created
--- from
---     first_non_null
--- order by
---     user_id,
---     days_from_signup
+    inner join document_shares_partitions as dsp on dcp.user_id = dsp.user_id and dcp.day = dsp.day
+    inner join document_opens_partitions as dop on dcp.user_id = dop.user_id and dcp.day = dop.day
+    inner join comments_created_partitions as ccp on dcp.user_id = ccp.user_id and dcp.day = ccp.day
+    inner join reactions_created_partitions as rcp on dcp.user_id = rcp.user_id and dcp.day = rcp.day
