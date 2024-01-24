@@ -5,7 +5,12 @@ with day_series as (
 
 users as (
     select distinct
-        user_id
+        user_id,
+        signup_date,
+        case
+            when min(days_from_signup) < 0 then true
+            else false
+        end as activity_before_signup
     from
         {{ ref('activities_by_age') }}
     -- where
@@ -14,12 +19,17 @@ users as (
     --         '00039149-7429-9321-80d2-69a5527bb791',
     --         '0006a3e2-e2a4-27f1-1afe-52a68df3bd54'
     --     )
+    group by
+        user_id,
+        signup_date
 ),
 
 daily_users as (
     select
         day,
-        user_id
+        user_id,
+        signup_date,
+        activity_before_signup
     from
         day_series
         cross join users
@@ -29,6 +39,8 @@ activities as (
     select
         d.day,
         d.user_id,
+        d.signup_date,
+        d.activity_before_signup,
         documents_created_cumsum,
         document_edits_cumsum,
         document_shares_cumsum,
@@ -49,6 +61,8 @@ document_created_partitions as (
     select
         day,
         user_id,
+        signup_date,
+        activity_before_signup,
         documents_created_cumsum,
         count(documents_created_cumsum) over (
             partition by user_id
@@ -126,6 +140,7 @@ reactions_created_partitions as (
 select
     dcp.day,
     dcp.user_id,
+    dcp.signup_date,
     documents_created_cumsum,
     coalesce(
         first_value(documents_created_cumsum) over (

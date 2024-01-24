@@ -1,5 +1,6 @@
 select
     user_id,
+    signup_date,
     days_from_signup,
     sum(documents_created) over (
         partition by
