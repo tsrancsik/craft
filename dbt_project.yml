@@ -16,5 +16,5 @@ models:
   craft_project:
     staging:
       materialized: table
-    by_age:
+    activities_by_age:
       materialized: table

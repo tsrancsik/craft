@@ -1,18 +1,20 @@
 with day_series as (
     select
-        generate_series (1, 100, 1) as day
+        generate_series (0, 100, 1) as day
 ),
 
 users as (
     select distinct
         user_id,
         signup_date,
+        signup_week,
+        signup_month,
         case
             when min(days_from_signup) < 0 then true
             else false
         end as activity_before_signup
     from
-        {{ ref('activities_by_age') }}
+        {{ ref('cummulated_activities_by_age') }}
     -- where
     --     user_id in (
     --         '00067a81-ef46-09ea-c509-bebcb4e23415',
@@ -21,7 +23,9 @@ users as (
     --     )
     group by
         user_id,
-        signup_date
+        signup_date,
+        signup_week,
+        signup_month
 ),
 
 daily_users as (
@@ -29,6 +33,8 @@ daily_users as (
         day,
         user_id,
         signup_date,
+        signup_week,
+        signup_month,
         activity_before_signup
     from
         day_series
@@ -40,6 +46,8 @@ activities as (
         d.day,
         d.user_id,
         d.signup_date,
+        d.signup_month,
+        d.signup_week,
         d.activity_before_signup,
         documents_created_cumsum,
         document_edits_cumsum,
@@ -49,7 +57,7 @@ activities as (
         reactions_created_cumsum
     from
         daily_users as d
-        left join {{ ref('activities_by_age') }} as a
+        left join {{ ref('cummulated_activities_by_age') }} as a
             on d.user_id = a.user_id
             and d.day = a.days_from_signup
     order by
@@ -62,6 +70,8 @@ document_created_partitions as (
         day,
         user_id,
         signup_date,
+        signup_week,
+        signup_month,
         activity_before_signup,
         documents_created_cumsum,
         count(documents_created_cumsum) over (
@@ -141,6 +151,8 @@ select
     dcp.day,
     dcp.user_id,
     dcp.signup_date,
+    dcp.signup_week,
+    dcp.signup_month,
     documents_created_cumsum,
     coalesce(
         first_value(documents_created_cumsum) over (
@@ -183,7 +195,6 @@ select
             order by rcp.day
         ), 0
     ) as reactions_created
-
 from
     document_created_partitions as dcp
     inner join document_edits_partitions as dep on dcp.user_id = dep.user_id and dcp.day = dep.day
