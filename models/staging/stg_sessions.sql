@@ -4,7 +4,7 @@ select
     date_trunc('week', signup_date :: date) as signup_week,
     date_trunc('month', signup_date :: date) as signup_month,
     "date" :: date as session_date,
-    "date" :: date - signup_date :: date as days_from_signup,
+    "date" :: date - signup_date :: date as day,
     documents_created,
     document_edits,
     document_shares,
@@ -13,3 +13,10 @@ select
     reactions_created
 from
     {{ source('craft', 'sessions') }}
+where
+    date >= (
+        select
+            min(signup_date) as first_signup
+        from
+            {{ source('craft', 'sessions') }}
+    )

@@ -10,7 +10,7 @@ users as (
         signup_week,
         signup_month,
         case
-            when min(days_from_signup) < 0 then true
+            when min(day) < 0 then true
             else false
         end as activity_before_signup
     from
@@ -59,7 +59,7 @@ activities as (
         daily_users as d
         left join {{ ref('cummulated_activities_by_age') }} as a
             on d.user_id = a.user_id
-            and d.day = a.days_from_signup
+            and d.day = a.day
     order by
         d.user_id,
         d.day

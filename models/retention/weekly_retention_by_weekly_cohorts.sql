@@ -1,60 +1,60 @@
-with "4weeks" as (
+with weeks as (
     select distinct
         user_id,
-        signup_month,
+        signup_week,
         day,
         sum(documents_created) over (
             partition by user_id
             order by day
-            range between 28 preceding and current row
-        ) as documents_created_4w,
+            range between 7 preceding and current row
+        ) as documents_created,
         sum(document_edits) over (
             partition by user_id
             order by day
-            range between 28 preceding and current row
-        ) as document_edits_4w,
+            range between 7 preceding and current row
+        ) as document_edits,
         sum(document_opens) over (
             partition by user_id
             order by day
-            range between 28 preceding and current row
-        ) as document_opens_4w,
+            range between 7 preceding and current row
+        ) as document_opens,
         sum(document_shares) over (
             partition by user_id
             order by day
-            range between 28 preceding and current row
-        ) as document_shares_4w,
+            range between 7 preceding and current row
+        ) as document_shares,
         sum(comments_created) over (
             partition by user_id
             order by day
-            range between 28 preceding and current row
-        ) as comments_created_4w,
+            range between 7 preceding and current row
+        ) as comments_created,
         sum(reactions_created) over (
             partition by user_id
             order by day
-            range between 28 preceding and current row
-        ) as reactions_created_4w
+            range between 7 preceding and current row
+        ) as reactions_created
     from
         {{ ref('activities_by_age_sparse') }}
 )
 select
-    signup_month,
+    signup_week,
     day,
     case
         when
-            documents_created_4w > 0
-            or document_edits_4w > 0
-            or document_opens_4w > 0
-            or document_shares_4w > 0
-            or comments_created_4w > 0
-            or reactions_created_4w > 0
+            documents_created > 0
+            or document_edits > 0
+            or document_opens > 0
+            or document_shares > 0
+            or comments_created > 0
+            or reactions_created > 0
         then true
         else false
     end as retained,
     count(distinct user_id) as users
 from
-    "4weeks"
+    weeks
 where
-    day in (28, 56, 84)
+    day in (7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 77, 84)
 group by
     1, 2, 3
 order by

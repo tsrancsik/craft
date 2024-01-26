@@ -6,7 +6,7 @@ sources:
     schema: craft
     tables:
       - name: sessions
-        description: Aggregated user activity
+        description: Daily aggregated user activity
         columns:
           - name: user_id
             description: Identifier of the user
@@ -35,7 +35,7 @@ sources:
 
 models:
   - name: stg_sessions
-    description: Sessions data amended with relative date
+    description: Cleaned daily activities amended with relative date and signup cohorts
     columns:
       - name: user_id
         description: Identifier of the user

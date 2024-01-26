@@ -6,4 +6,4 @@ where
         '0006a3e2-e2a4-27f1-1afe-52a68df3bd54',
         '00039149-7429-9321-80d2-69a5527bb791'
     )
-order by user_id, days_from_signup
+order by user_id, day

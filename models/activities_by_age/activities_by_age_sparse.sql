@@ -10,7 +10,7 @@ users as (
         signup_week,
         signup_month,
         case
-            when min(days_from_signup) < 0 then true
+            when min(day) < 0 then true
             else false
         end as activity_before_signup
     from
@@ -59,18 +59,18 @@ activities as (
         daily_users as d
         left join {{ ref('stg_sessions') }} as a
             on d.user_id = a.user_id
-            and d.day = a.days_from_signup
+            and d.day = a.day
     order by
         d.user_id,
         d.day
 )
 
 select * from activities
-where
-    user_id in (
-        '00067a81-ef46-09ea-c509-bebcb4e23415',
-        '00039149-7429-9321-80d2-69a5527bb791',
-        '0006a3e2-e2a4-27f1-1afe-52a68df3bd54',
-        '00039149-7429-9321-80d2-69a5527bb791'
-    )
+-- where
+--     user_id in (
+--         '00067a81-ef46-09ea-c509-bebcb4e23415',
+--         '00039149-7429-9321-80d2-69a5527bb791',
+--         '0006a3e2-e2a4-27f1-1afe-52a68df3bd54',
+--         '00039149-7429-9321-80d2-69a5527bb791'
+--     )
 order by user_id, day

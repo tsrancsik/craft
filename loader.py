@@ -17,7 +17,6 @@ engine = create_engine(connection_string)
 
 init_sql = '''
   CREATE SCHEMA IF NOT EXISTS craft;
-  DROP TABLE IF EXISTS craft.data;
 '''
 
 conn = engine.raw_connection()
