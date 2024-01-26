@@ -148,7 +148,7 @@ select
             partition by dcp.user_id, document_created_partition
             order by dcp.day
         ), 0
-    ) as document_created,
+    ) as documents_created,
     document_edits_cumsum,
     coalesce(
         first_value(document_edits_cumsum) over (

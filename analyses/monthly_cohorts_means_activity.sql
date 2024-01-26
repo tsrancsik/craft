@@ -1,9 +1,8 @@
 select
     date_trunc('month', signup_date) as monthly_cohort,
     day,
-    activity_before_signup,
     count(distinct user_id) as users,
-    avg(document_created) as avg_documents_created,
+    avg(documents_created) as avg_documents_created,
     avg(document_edits) as avg_document_edits,
     avg(document_opens) as avg_document_opens,
     avg(document_shares) as avg_document_shares,
