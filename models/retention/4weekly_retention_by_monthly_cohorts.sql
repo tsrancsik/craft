@@ -54,7 +54,7 @@ select
 from
     "4weeks"
 where
-    day in (28, 56, 84)
+    day in (28, 56, 84, 112, 140, 168, 196, 224, 252, 280, 308, 336, 364)
 group by
     1, 2, 3
 order by

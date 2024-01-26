@@ -1,4 +1,4 @@
-select * from {{ ref('cummulated_activities_by_age_sparse') }}
+select * from {{ ref('cumulated_activities_by_age_sparse') }}
 where
     user_id in (
         '00067a81-ef46-09ea-c509-bebcb4e23415',

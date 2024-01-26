@@ -1,6 +1,8 @@
+{{ config(materialized='view') }}
+
 with day_series as (
     select
-        generate_series (0, 100, 1) as day
+        generate_series (0, 365, 1) as day
 ),
 
 users as (
@@ -8,19 +10,9 @@ users as (
         user_id,
         signup_date,
         signup_week,
-        signup_month,
-        case
-            when min(day) < 0 then true
-            else false
-        end as activity_before_signup
+        signup_month
     from
-        {{ ref('cummulated_activities_by_age') }}
-    -- where
-    --     user_id in (
-    --         '00067a81-ef46-09ea-c509-bebcb4e23415',
-    --         '00039149-7429-9321-80d2-69a5527bb791',
-    --         '0006a3e2-e2a4-27f1-1afe-52a68df3bd54'
-    --     )
+        {{ ref('cumulated_activities_by_age') }}
     group by
         user_id,
         signup_date,
@@ -34,8 +26,7 @@ daily_users as (
         user_id,
         signup_date,
         signup_week,
-        signup_month,
-        activity_before_signup
+        signup_month
     from
         day_series
         cross join users
@@ -48,7 +39,6 @@ activities as (
         d.signup_date,
         d.signup_month,
         d.signup_week,
-        d.activity_before_signup,
         documents_created_cumsum,
         document_edits_cumsum,
         document_shares_cumsum,
@@ -57,7 +47,7 @@ activities as (
         reactions_created_cumsum
     from
         daily_users as d
-        left join {{ ref('cummulated_activities_by_age') }} as a
+        left join {{ ref('cumulated_activities_by_age') }} as a
             on d.user_id = a.user_id
             and d.day = a.day
     order by
@@ -72,7 +62,6 @@ document_created_partitions as (
         signup_date,
         signup_week,
         signup_month,
-        activity_before_signup,
         documents_created_cumsum,
         count(documents_created_cumsum) over (
             partition by user_id

@@ -9,10 +9,10 @@ select
     avg(comments_created) as avg_coomments_created,
     avg(reactions_created) as avg_reactions_created
 from
-    {{ ref('cummulated_activities_by_age_sparse') }}
+    {{ ref('cumulated_activities_by_age_sparse') }}
 where
     day in (
-        0, 1, 7, 28, 91
+        0, 1, 7, 28, 91, 365
     )
 group by
     signup_month,

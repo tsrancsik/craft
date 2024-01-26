@@ -28,6 +28,4 @@ conn.close()
 
 # Processing input files
 sessions = pd.read_csv('input/Craft_DataAnalyst_homework.csv', index_col = 0)
-# There is no unique idetifier
-# sessions = sessions.drop_duplicates()
 sessions.to_sql(schema = 'craft', name = 'sessions', con = engine, if_exists = 'replace')
