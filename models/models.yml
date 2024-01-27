@@ -45,11 +45,19 @@ models:
         description: Date of signup
         test:
           - not_null
-      - name: date
+      - name: signup_week
+        description: Week of signup
+        test:
+          - not_null
+      - name: signup_month
+        description: Month of signup
+        test:
+          - not_null
+      - name: session_date
         description: Date of activities
         test:
           - not_null
-      - name: days_from_signup
+      - name: days
         description: Days from signup at the time of the session
         test:
           - not_null
