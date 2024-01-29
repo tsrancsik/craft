@@ -57,11 +57,11 @@ models:
         description: Date of activities
         test:
           - not_null
-      - name: days
+      - name: day
         description: Days from signup at the time of the session
         test:
           - not_null
-      - name: document_created
+      - name: documents_created
         description: Times of creating a new document in the session
       - name: document_edits
         description: Times of editing a document in the session

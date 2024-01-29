@@ -1,8 +1,9 @@
-select
+select distinct
     user_id,
     signup_date,
     signup_week,
     signup_month,
+    last_active_day,
     day,
     sum(documents_created) over (
         partition by

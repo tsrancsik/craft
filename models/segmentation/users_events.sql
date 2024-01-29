@@ -6,6 +6,7 @@ with data1 as (
         signup_date,
         signup_week,
         signup_month,
+        last_active_day,
         day,
         documents_created,
         document_edits,
@@ -33,6 +34,7 @@ data2 as (
         signup_date,
         signup_week,
         signup_month,
+        last_active_day,
         max(coalesce(case when day = 0 then documents_created end, 0)) as documents_created_0,
         max(coalesce(case when day = 1 then documents_created end, 0)) as documents_created_1,
         max(coalesce(case when day = 7 then documents_created end, 0)) as documents_created_7,
@@ -81,7 +83,8 @@ data2 as (
         user_id,
         signup_date,
         signup_week,
-        signup_month
+        signup_month,
+        last_active_day
 ),
 
 data3 as (
@@ -90,6 +93,7 @@ data3 as (
         signup_date,
         signup_week,
         signup_month,
+        last_active_day,
         documents_created_0 as dc_0,
         documents_created_1 - documents_created_0 as dc_1,
         documents_created_7 - documents_created_1 as dc_7,

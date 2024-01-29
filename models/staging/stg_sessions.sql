@@ -1,8 +1,20 @@
+with users as (
+    select
+        user_id,
+        max("date" :: date) - signup_date :: date as last_active_day
+    from
+        {{ source('craft', 'sessions') }}
+    group by
+        user_id,
+        signup_date
+)
+
 select
-    user_id,
+    s.user_id,
     signup_date :: date as signup_date,
     date_trunc('week', signup_date :: date) :: date as signup_week,
     date_trunc('month', signup_date :: date) :: date as signup_month,
+    u.last_active_day,
     "date" :: date as session_date,
     "date" :: date - signup_date :: date as day,
     documents_created,
@@ -12,11 +24,7 @@ select
     comments_created,
     reactions_created
 from
-    {{ source('craft', 'sessions') }}
+    {{ source('craft', 'sessions') }} as s
+    inner join users as u on s.user_id = u.user_id
 where
-    date >= (
-        select
-            min(signup_date) as first_signup
-        from
-            {{ source('craft', 'sessions') }}
-    )
+    date >= signup_date

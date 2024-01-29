@@ -10,14 +10,10 @@ users as (
         user_id,
         signup_date,
         signup_week,
-        signup_month
+        signup_month,
+        last_active_day
     from
         {{ ref('cumulated_activities_by_age') }}
-    group by
-        user_id,
-        signup_date,
-        signup_week,
-        signup_month
 ),
 
 daily_users as (
@@ -26,7 +22,8 @@ daily_users as (
         user_id,
         signup_date,
         signup_week,
-        signup_month
+        signup_month,
+        last_active_day
     from
         day_series
         cross join users
@@ -39,6 +36,7 @@ activities as (
         d.signup_date,
         d.signup_month,
         d.signup_week,
+        d.last_active_day,
         documents_created_cumsum,
         document_edits_cumsum,
         document_shares_cumsum,
@@ -62,6 +60,7 @@ document_created_partitions as (
         signup_date,
         signup_week,
         signup_month,
+        last_active_day,
         documents_created_cumsum,
         count(documents_created_cumsum) over (
             partition by user_id
@@ -142,6 +141,7 @@ select
     dcp.signup_date,
     dcp.signup_week,
     dcp.signup_month,
+    dcp.last_active_day,
     documents_created_cumsum,
     coalesce(
         first_value(documents_created_cumsum) over (
